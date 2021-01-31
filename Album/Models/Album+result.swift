@@ -32,13 +32,20 @@ extension Album.SearchResults.Result: CustomStringConvertible {
     }
     
     var isBookmarked: Bool {
-        // TODO: check collectionId
-        return false
+        guard let collectionSet = Album.Search.getCollectionId() else {
+            return false
+        }
+        return collectionSet.contains(collectionId)
     }
     
     var bookmarkImage: UIImage? {
-        return isBookmarked ? UIImage(named: "ic_bookmark") : UIImage(named: "ic_unbookmark")
+        return isBookmarked ?
+            Album.SearchResults.Result.bookmarkedImage :
+            Album.SearchResults.Result.unbookmarkedImage
     }
+    
+    static let bookmarkedImage = UIImage(named: "ic_bookmark")?.mask(with: .primaryRed)
+    static let unbookmarkedImage = UIImage(named: "ic_unbookmark")?.mask(with: .primaryRed)
 }
 
 //"resultCount":50,

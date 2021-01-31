@@ -19,3 +19,33 @@ extension Album {
         }
     }
 }
+
+extension Album.Search {
+    static let KEY_COLLECTION_ID_SET = "KEY_COLLECTION_ID_SET"
+    
+    static func addCollection(_ id: Int) {
+        var currentCollection: Set<Int> = getCollectionId() ?? Set<Int>()
+        currentCollection.insert(id)
+        
+        let encodedData = try? NSKeyedArchiver.archivedData(withRootObject: currentCollection, requiringSecureCoding: false)
+        
+        UserDefaults.standard.set(encodedData, forKey: KEY_COLLECTION_ID_SET)
+    }
+    
+    static func removeCollection(_ id: Int) {
+        var currentCollection = getCollectionId() ?? Set<Int>()
+        currentCollection.remove(id)
+        
+        let encodedData = try? NSKeyedArchiver.archivedData(withRootObject: currentCollection, requiringSecureCoding: false)
+        
+        UserDefaults.standard.set(encodedData, forKey: KEY_COLLECTION_ID_SET)
+    }
+    
+    static func getCollectionId() -> Set<Int>? {
+        guard let decoded = UserDefaults.standard.object(forKey: KEY_COLLECTION_ID_SET) as? Data else {
+            return nil
+        }
+        let decodedSet = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(decoded)
+        return decodedSet as? Set<Int>
+    }
+}

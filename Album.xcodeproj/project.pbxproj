@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A36130D88046E04F3812D73F /* Pods_Album.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7338B0FA0954C9D4032CD7E9 /* Pods_Album.framework */; };
+		E875128225C6D2610093D224 /* SearchPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E875128125C6D2610093D224 /* SearchPlaceholderView.swift */; };
 		E87A658325C65C4200A21885 /* Album+result.swift in Sources */ = {isa = PBXBuildFile; fileRef = E87A658225C65C4200A21885 /* Album+result.swift */; };
 		E87A658525C65F0200A21885 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E87A658425C65F0200A21885 /* NetworkManager.swift */; };
 		E87A658725C6628E00A21885 /* SearchAlbumViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E87A658625C6628E00A21885 /* SearchAlbumViewModel.swift */; };
@@ -30,6 +31,7 @@
 		2682EDF149E1B4A720D6454B /* Pods-Album.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Album.release.xcconfig"; path = "Target Support Files/Pods-Album/Pods-Album.release.xcconfig"; sourceTree = "<group>"; };
 		7338B0FA0954C9D4032CD7E9 /* Pods_Album.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Album.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		88CECB106D73495708A09513 /* Pods-Album.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Album.debug.xcconfig"; path = "Target Support Files/Pods-Album/Pods-Album.debug.xcconfig"; sourceTree = "<group>"; };
+		E875128125C6D2610093D224 /* SearchPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchPlaceholderView.swift; sourceTree = "<group>"; };
 		E87A658225C65C4200A21885 /* Album+result.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Album+result.swift"; sourceTree = "<group>"; };
 		E87A658425C65F0200A21885 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		E87A658625C6628E00A21885 /* SearchAlbumViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchAlbumViewModel.swift; sourceTree = "<group>"; };
@@ -79,6 +81,31 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		E875128025C6D2420093D224 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				E875128125C6D2610093D224 /* SearchPlaceholderView.swift */,
+				E87A658B25C6920200A21885 /* AlbumTableViewCell.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		E875128325C6D2900093D224 /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				E87A658625C6628E00A21885 /* SearchAlbumViewModel.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		E875128525C6D29D0093D224 /* ViewController */ = {
+			isa = PBXGroup;
+			children = (
+				E88FDAF925C2D82E0070105D /* MainViewController.swift */,
+			);
+			path = ViewController;
+			sourceTree = "<group>";
+		};
 		E87A658825C690CB00A21885 /* Extension */ = {
 			isa = PBXGroup;
 			children = (
@@ -109,15 +136,15 @@
 		E88FDAE325C2D3360070105D /* Album */ = {
 			isa = PBXGroup;
 			children = (
+				E875128525C6D29D0093D224 /* ViewController */,
+				E875128325C6D2900093D224 /* ViewModel */,
 				E87A658825C690CB00A21885 /* Extension */,
 				E88FDB0025C2DDA20070105D /* API */,
 				E88FDB0225C2DDCD0070105D /* Models */,
+				E875128025C6D2420093D224 /* Views */,
 				E88FDB0125C2DDB80070105D /* Resources */,
 				E88FDAFB25C2D8A40070105D /* Launch */,
 				E88FDAF225C2D3380070105D /* Info.plist */,
-				E88FDAF925C2D82E0070105D /* MainViewController.swift */,
-				E87A658625C6628E00A21885 /* SearchAlbumViewModel.swift */,
-				E87A658B25C6920200A21885 /* AlbumTableViewCell.swift */,
 			);
 			path = Album;
 			sourceTree = "<group>";
@@ -297,6 +324,7 @@
 				E87A659025C6A4C500A21885 /* UIColor+extension.swift in Sources */,
 				E88FDAE525C2D3360070105D /* AppDelegate.swift in Sources */,
 				E87A658E25C6A4AC00A21885 /* Color.swift in Sources */,
+				E875128225C6D2610093D224 /* SearchPlaceholderView.swift in Sources */,
 				E87A658A25C690E100A21885 /* TableView+extension.swift in Sources */,
 				E88FDB0425C2DE520070105D /* SearchService.swift in Sources */,
 				E88FDB0A25C2E0990070105D /* Album+search.swift in Sources */,

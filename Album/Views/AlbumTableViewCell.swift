@@ -9,6 +9,7 @@
 import UIKit
 import SnapKit
 import SDWebImage
+import RxSwift
 
 class AlbumTableViewCell: UITableViewCell {
     
@@ -36,14 +37,14 @@ class AlbumTableViewCell: UITableViewCell {
         return lbl
     }()
     
-    private let bookmarkBtn: UIButton = {
+    let bookmarkBtn: UIButton = {
         let btn = UIButton()
         btn.contentVerticalAlignment = .center
         btn.contentHorizontalAlignment = .center
-        
-        
         return btn
     }()
+    
+    var disposeBag = DisposeBag()
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -56,6 +57,7 @@ class AlbumTableViewCell: UITableViewCell {
         collectionNameLbl.text = ""
         collectionDescLbl.text = ""
         bookmarkBtn.setImage(nil, for: .normal)
+        disposeBag = DisposeBag()
     }
     
     required init?(coder: NSCoder) {
@@ -68,7 +70,6 @@ class AlbumTableViewCell: UITableViewCell {
         collectionNameLbl.text = kAlbumData.collectionName
         collectionDescLbl.text = kAlbumData.artistName + " \u{2022} " + kAlbumData.primaryGenreName
         bookmarkBtn.setImage(kAlbumData.bookmarkImage, for: .normal)
-        bookmarkBtn.imageView?.setColor(.primaryRed)
     }
     
     private func setup() {
