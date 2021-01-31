@@ -159,11 +159,11 @@ class MainViewController: UIViewController {
         case .searchResult, .bookmark:
             tableView.isHidden = false
             placeholderView.isHidden = true
-            tableView.reloadData()
         case .placeholder:
             tableView.isHidden = true
             placeholderView.isHidden = false
         }
+        tableView.reloadData()
     }
 }
 
