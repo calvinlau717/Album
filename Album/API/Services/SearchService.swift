@@ -12,6 +12,7 @@ import Moya
 
 protocol SearchServiceProtocol {
     func search(content: Album.Search) -> Single<Album.SearchResults>
+    func search(collectionIds: Set<Int>) -> Single<Album.SearchResults>
 }
 
 class SearchService: SearchServiceProtocol {
@@ -20,6 +21,11 @@ class SearchService: SearchServiceProtocol {
     
     func search(content: Album.Search) -> Single<Album.SearchResults> {
         return NetworkManager.shared.searchSerivceProvider.rx.request(.search(content: content))
+            .map(Album.SearchResults.self)
+    }
+    
+    func search(collectionIds: Set<Int>) -> Single<Album.SearchResults> {
+        return NetworkManager.shared.searchSerivceProvider.rx.request(.searchIds(collectionIds: collectionIds))
             .map(Album.SearchResults.self)
     }
 }

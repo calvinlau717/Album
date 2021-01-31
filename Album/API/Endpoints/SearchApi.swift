@@ -11,6 +11,7 @@ import Moya
 
 enum SearchApi {
     case search(content: Album.Search)
+    case searchIds(collectionIds: Set<Int>)
 }
 
 extension SearchApi: TargetType {
@@ -23,8 +24,10 @@ extension SearchApi: TargetType {
     
     var path: String {
         switch self {
-            case .search:
-                return "search"
+        case .search:
+            return "search"
+        case .searchIds:
+            return "lookup"
         }
     }
     
@@ -42,6 +45,13 @@ extension SearchApi: TargetType {
             let params = [
                 "term" : content.term,
                 "entity": content.entity
+            ]
+            return .requestParameters(parameters: params, encoding: URLEncoding.default)
+        case .searchIds(let collectionIds):
+            let kCollectionIds = Array(collectionIds).map{"\($0)"}
+            let params = [
+                "id" : kCollectionIds.joined(separator: ","),
+                "entity": Album.Search.Entity.album.rawValue
             ]
             return .requestParameters(parameters: params, encoding: URLEncoding.default)
         }

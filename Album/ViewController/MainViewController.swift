@@ -12,18 +12,19 @@ import RxCocoa
 import NSObject_Rx
 import RxOptional
 
-class MainViewController: UIViewController, Searchable {
-    
-    var isSearching: BehaviorSubject<Bool> = BehaviorSubject<Bool>(value: false)
+class MainViewController: UIViewController {
     
     // MARK: View
     private let tableView: UITableView = {
-        let tv = UITableView(frame: .zero, style: .plain)
+        let tv = UITableView(frame: .zero, style: UITableView.Style.grouped)
+        tv.isHidden = true
         return tv
     }()
     
     private let placeholderView: SearchPlaceholderView = {
-        return SearchPlaceholderView()
+        let v = SearchPlaceholderView()
+        v.isHidden = true
+        return v
     }()
     
     private let searchController: UISearchController = {
@@ -38,7 +39,17 @@ class MainViewController: UIViewController, Searchable {
     
     // MARK: Data source
     private var result: Album.SearchResults?
-        
+    private var bookmarks: Album.SearchResults?
+    
+    private var isSearching: Bool {
+        guard let text = searchController.searchBar.text else {
+            return false
+        }
+        return !text.isEmpty
+    }
+    
+    private var displayMode: MainViewController.Display = .bookmark
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setup()
@@ -56,9 +67,17 @@ class MainViewController: UIViewController, Searchable {
             .subscribe(onNext: { [weak self] data in
                 let (searchResult, _) = data
                 self?.result = searchResult
-                self?.tableView.reloadData()
+                self?.reloadData()
             })
             .disposed(by: rx.disposeBag)
+        
+        viewModel.output.bookmarks
+            .subscribe(onNext: { [weak self] bookmarks in
+                self?.bookmarks = bookmarks
+                self?.reloadData()
+            })
+            .disposed(by: rx.disposeBag)
+        
     }
     
     private func viewSetup() {
@@ -101,16 +120,52 @@ class MainViewController: UIViewController, Searchable {
             .bind(to: viewModel.input.didSearch)
             .disposed(by: rx.disposeBag)
          
-        let isSearching = searchController.searchBar.rx.text.map{ !($0?.isEmpty ?? true) }
-        isSearching.map{ !$0 }
-            .bind(to: tableView.rx.isHidden)
+        // Switch between Placeholder (bookmarked album) <-> search result
+        let isSearching = searchController.searchBar.rx.text.map{ !($0?.isEmpty ?? true) }.share()
+        isSearching.asObservable()
+            .subscribe(onNext: { [weak self] isSearching in
+                self?.reloadData()
+            })
             .disposed(by: rx.disposeBag)
         
+        
+        // Fetch bookmarks when not searching
         isSearching
-            .bind(to: placeholderView.rx.isHidden)
-            .disposed(by: rx.disposeBag)    }
-}
+            .map{ _ in Album.Search.getCollectionId() }
+            .filterNil()
+            .bind(to: viewModel.input.fetchBookmakrs)
+            .disposed(by: rx.disposeBag)
+    }
 
+    private func fetchMode() {
+        let showBookmarksResult = !isSearching && !(bookmarks?.results.isEmpty ?? true)
+        if isSearching {
+            self.displayMode = .searchResult
+            return
+        }
+        
+        if showBookmarksResult {
+            self.displayMode = .bookmark
+            return
+        }
+        
+        self.displayMode = .placeholder
+    }
+    
+    // Show placeholderView, search result or bookmarks
+    private func reloadData() {
+        fetchMode()
+        switch displayMode {
+        case .searchResult, .bookmark:
+            tableView.isHidden = false
+            placeholderView.isHidden = true
+            tableView.reloadData()
+        case .placeholder:
+            tableView.isHidden = true
+            placeholderView.isHidden = false
+        }
+    }
+}
 
 extension MainViewController: UITableViewDelegate {
     
@@ -119,12 +174,14 @@ extension MainViewController: UITableViewDelegate {
 // MARK: TableView data source
 extension MainViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return result?.results.count ?? 0
+        let bookmarks = self.bookmarks?.results.count ?? 0
+        let searchResult = self.result?.results.count ?? 0
+        return isSearching ? searchResult : bookmarks
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(with: AlbumTableViewCell.self, for: indexPath)
-        let result = self.result?.results[indexPath.row]
+        let result = isSearching ? self.result?.results[indexPath.row] : self.bookmarks?.results[indexPath.row]
         cell.config(result)
         
         cell.bookmarkBtn.rx.tap.asDriver()
@@ -133,7 +190,10 @@ extension MainViewController: UITableViewDataSource {
                     return
                 }
                 if kResult.isBookmarked {
+                    // unbookmarked, remove the collectionId and fetch bookmarks
                     Album.Search.removeCollection(kResult.collectionId)
+                    self?.viewModel.input.fetchBookmakrs.onNext(Album.Search.getCollectionId() ?? Set<Int>())
+                    return
                 } else {
                     Album.Search.addCollection(kResult.collectionId)
                 }
@@ -143,45 +203,38 @@ extension MainViewController: UITableViewDataSource {
         
         return cell
     }
-}
-
-protocol Searchable: UIViewController {
-    var isSearching: BehaviorSubject<Bool> { get set }
-}
-
-extension Reactive where Base: UISearchController {
-    public var active: ControlProperty<Bool> {
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let lbl = UILabel()
+        lbl.textColor = .descText
+        lbl.font = UIFont.systemFont(ofSize: 30, weight: .light)
         
-        let soruce: Observable<Bool> = Observable.deferred { [weak searchController = self.base as UISearchController] () -> Observable<Bool> in
-            let isActive = searchController?.isActive ?? false
-            return Observable<Bool>.just(isActive).startWith(false)
+        switch displayMode {
+        case .searchResult:
+            lbl.text = "Search results"
+        case .bookmark:
+            lbl.text = "Bookmarks"
+        case .placeholder:
+            return nil
         }
         
-        let bindingObserver = Binder(self.base) { (searchController, isActive: Bool) in
-//            searchController.isActive = isActive
+        let container = UIView()
+        container.backgroundColor = .darkBackground
+        container.addSubview(lbl)
+        lbl.snp.makeConstraints { (make) in
+            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 5, left: 20, bottom: 5, right: 0))
         }
         
-        return ControlProperty(values: soruce, valueSink: bindingObserver)
+        return container
     }
 }
 
-// Reference
-/// Reactive wrapper for `text` property.
-//public var value: ControlProperty<String?> {
-//    let source: Observable<String?> = Observable.deferred { [weak searchBar = self.base as UISearchBar] () -> Observable<String?> in
-//        let text = searchBar?.text
-//
-//        let textDidChange = (searchBar?.rx.delegate.methodInvoked(#selector(UISearchBarDelegate.searchBar(_:textDidChange:))) ?? Observable.empty())
-//        let didEndEditing = (searchBar?.rx.delegate.methodInvoked(#selector(UISearchBarDelegate.searchBarTextDidEndEditing(_:))) ?? Observable.empty())
-//
-//        return Observable.merge(textDidChange, didEndEditing)
-//                .map { _ in searchBar?.text ?? "" }
-//                .startWith(text)
-//    }
-//
-//    let bindingObserver = Binder(self.base) { (searchBar, text: String?) in
-//        searchBar.text = text
-//    }
-//
-//    return ControlProperty(values: source, valueSink: bindingObserver)
-//}
+// MARK: Display mode
+extension MainViewController {
+    enum Display {
+        case searchResult
+        case bookmark
+        case placeholder
+    }
+}
+
