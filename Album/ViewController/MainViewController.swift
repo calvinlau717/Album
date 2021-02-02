@@ -181,21 +181,22 @@ extension MainViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(with: AlbumTableViewCell.self, for: indexPath)
-        let result = isSearching ? self.result?.results[indexPath.row] : self.bookmarks?.results[indexPath.row]
+        let results = isSearching ? self.result?.results : self.bookmarks?.results
+        guard let kResults = results, indexPath.row < kResults.count else {
+            return UITableViewCell()
+        }
+        let result = kResults[indexPath.row]
         cell.config(result)
         
         cell.bookmarkBtn.rx.tap.asDriver()
             .drive(onNext: { [weak self] in
-                guard let kResult = result else {
-                    return
-                }
-                if kResult.isBookmarked {
+                if result.isBookmarked {
                     // unbookmarked, remove the collectionId and fetch bookmarks
-                    Album.Search.removeCollection(kResult.collectionId)
+                    Album.Search.removeCollection(result.collectionId)
                     self?.viewModel.input.fetchBookmakrs.onNext(Album.Search.getCollectionId() ?? Set<Int>())
                     return
                 } else {
-                    Album.Search.addCollection(kResult.collectionId)
+                    Album.Search.addCollection(result.collectionId)
                 }
                 self?.tableView.reloadRows(at: [indexPath], with: .none)
             })
